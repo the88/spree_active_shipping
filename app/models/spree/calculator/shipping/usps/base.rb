@@ -3,6 +3,9 @@ module Spree
     module Usps
       class Base < Spree::Calculator::Shipping::ActiveShipping::Base
 
+        preference :usps_login, :string, default: -> { Spree::ActiveShipping::Config[:usps_login] }
+        preference :test_mode, :boolean, default: -> { Spree::ActiveShipping::Config[:test_mode] }
+
         SERVICE_CODE_PREFIX = {
           :international => 'intl',
           :domestic      => 'dom'
@@ -30,8 +33,8 @@ module Spree
 
         def carrier
           carrier_details = {
-            :login => Spree::ActiveShipping::Config[:usps_login],
-            :test => Spree::ActiveShipping::Config[:test_mode]
+            :login => preferred_usps_login,
+            :test => preferred_test_mode
           }
 
           ::ActiveShipping::USPS.new(carrier_details)
