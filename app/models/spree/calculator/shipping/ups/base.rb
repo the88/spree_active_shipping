@@ -4,16 +4,24 @@ module Spree
   module Calculator::Shipping
     module Ups
       class Base < Spree::Calculator::Shipping::ActiveShipping::Base
+
+        preference :ups_login, :string, default: -> { Spree::ActiveShipping::Config[:ups_login] }
+        preference :ups_password, :string, default: -> { Spree::ActiveShipping::Config[:ups_password] }
+        preference :ups_key, :string, default: -> { Spree::ActiveShipping::Config[:ups_key] }
+        preference :shipper_number, :string, default: -> { Spree::ActiveShipping::Config[:shipper_number] }
+        preference :test_mode, :boolean, default: -> { Spree::ActiveShipping::Config[:test_mode] }
+
+
         def carrier
           carrier_details = {
-            :login => Spree::ActiveShipping::Config[:ups_login],
-            :password => Spree::ActiveShipping::Config[:ups_password],
-            :key => Spree::ActiveShipping::Config[:ups_key],
-            :test => Spree::ActiveShipping::Config[:test_mode]
+            :login => preferred_ups_login,
+            :password => preferred_ups_password,
+            :key => preferred_ups_key,
+            :test => preferred_test_mode
           }
 
-          if shipper_number = Spree::ActiveShipping::Config[:shipper_number]
-            carrier_details.merge!(:origin_account => shipper_number)
+          if preferred_shipper_number.present?
+            carrier_details.merge!(:origin_account => preferred_shipper_number)
           end
 
           ActiveMerchant::Shipping::UPS.new(carrier_details)
